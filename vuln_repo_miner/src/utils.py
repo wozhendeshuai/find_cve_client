@@ -25,3 +25,10 @@ def write_jsonl(path: str, records: Iterable[dict]) -> None:
         for record in records:
             handle.write(json.dumps(record, ensure_ascii=False))
             handle.write("\n")
+
+
+def append_jsonl(path: str, record: dict) -> None:
+    """追加单条记录到 JSONL 文件。"""
+    with open(path, "a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record, ensure_ascii=False))
+        handle.write("\n")

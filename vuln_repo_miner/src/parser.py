@@ -5,7 +5,7 @@ import logging
 
 
 def load_vuln_records(path: str):
-    """加载漏洞记录，字段缺失时输出 warning。"""
+    """加载漏洞记录，字段缺失时输出警告。"""
     records = []
     with open(path, "r", encoding="utf-8") as handle:
         content = handle.read().strip()
@@ -17,7 +17,7 @@ def load_vuln_records(path: str):
                 if isinstance(data, list):
                     records = data
                 else:
-                    logging.warning("Input JSON is not a list")
+                    logging.warning("输入的 JSON 不是数组格式")
                     records = [data]
             else:
                 for line in content.splitlines():
@@ -26,11 +26,11 @@ def load_vuln_records(path: str):
                         continue
                     records.append(json.loads(line))
         except json.JSONDecodeError as exc:
-            logging.error("Failed to parse input: %s", exc)
+            logging.error("解析输入文件失败: %s", exc)
             return []
 
     for record in records:
         for key in ["CVE_Number", "CVE_Library", "CVE_Library_version", "CVE_Class", "CVE_Method"]:
             if key not in record:
-                logging.warning("Missing field %s in record: %s", key, record.get("CVE_Number", "UNKNOWN"))
+                logging.warning("记录中缺少字段 %s: %s", key, record.get("CVE_Number", "UNKNOWN"))
     return records

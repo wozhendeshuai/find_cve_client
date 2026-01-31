@@ -15,7 +15,7 @@ def _rg_files(repo_path: str, pattern: str) -> List[str]:
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
     except FileNotFoundError:
-        logging.warning("rg not available, falling back to os.walk")
+        logging.warning("未找到 rg 工具，回退到 os.walk 扫描")
         return []
     if result.returncode not in (0, 1):
         return []

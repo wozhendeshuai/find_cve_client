@@ -131,7 +131,7 @@ def generate_candidate_versions(group_id: str, artifact_id: str, spec: VersionSp
             filtered = [v for v in versions if version_satisfies(v, spec)]
             candidates.extend(filtered)
         except Exception as exc:
-            logging.warning("Failed to query Maven Central: %s", exc)
+            logging.warning("  查询 Maven Central 失败: %s", exc)
     unique = list(dict.fromkeys(candidates))
     return unique
 
@@ -236,7 +236,7 @@ def resolve_dependency_version(repo_path: str, group_id: str, artifact_id: str) 
             combined_properties.update(parsed["properties"])
             combined_dep_mgmt.update(parsed["dependencyManagement"])
         except Exception as exc:
-            logging.warning("Failed to parse %s: %s", pom, exc)
+            logging.warning("解析 %s 失败: %s", pom, exc)
 
     target_key = f"{group_id}:{artifact_id}"
 
@@ -260,7 +260,7 @@ def resolve_dependency_version(repo_path: str, group_id: str, artifact_id: str) 
                     return True, {
                         "resolved_version": resolved,
                         "source": source,
-                        "reason": f"Resolved via {source}",
+                        "reason": f"通过 {source} 解析",
                     }
 
     # fallback to dependencyManagement only
@@ -268,7 +268,7 @@ def resolve_dependency_version(repo_path: str, group_id: str, artifact_id: str) 
         return True, {
             "resolved_version": combined_dep_mgmt[target_key],
             "source": "dependencyManagement",
-            "reason": "Resolved via dependencyManagement",
+            "reason": "通过 dependencyManagement 解析",
         }
 
     # dynamic fallback
@@ -279,13 +279,13 @@ def resolve_dependency_version(repo_path: str, group_id: str, artifact_id: str) 
             return True, {
                 "resolved_version": match.group(1),
                 "source": "mvn_dependency_tree",
-                "reason": "Resolved via mvn dependency:tree",
+                "reason": "通过 mvn dependency:tree 解析",
             }
 
     return True, {
         "resolved_version": None,
         "source": "unknown",
-        "reason": "Unable to resolve dependency version",
+        "reason": "无法解析依赖版本",
     }
 
 
@@ -295,9 +295,9 @@ def _run_dependency_tree(repo_path: str, group_id: str, artifact_id: str) -> Opt
     try:
         result = subprocess.run(cmd, cwd=repo_path, capture_output=True, text=True, timeout=120)
     except Exception as exc:
-        logging.warning("Failed to run mvn dependency:tree: %s", exc)
+        logging.warning("执行 mvn dependency:tree 失败: %s", exc)
         return None
     if result.returncode != 0:
-        logging.warning("mvn dependency:tree failed: %s", result.stderr[-200:])
+        logging.warning("mvn dependency:tree 执行失败: %s", result.stderr[-200:])
         return None
     return result.stdout

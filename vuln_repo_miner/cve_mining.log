@@ -1,0 +1,11 @@
+[Sun Feb  1 01:15:15 CST 2026] 开始 CVE 挖掘任务...
+输入文件: 
+输出文件: 
+Traceback (most recent call last):
+  File "/Users/jiajunyu/paper/project/find_cve_client/vuln_repo_miner/main.py", line 283, in <module>
+    main()
+  File "/Users/jiajunyu/paper/project/find_cve_client/vuln_repo_miner/main.py", line 263, in main
+    open(args.output, 'w').close()
+    ^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: ''
+[Sun Feb  1 01:15:15 CST 2026] CVE 挖掘任务结束，退出码: 1
